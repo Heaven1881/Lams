@@ -1,0 +1,11 @@
+2016-03-06 11:05:10,806 ConsumerManager.py[line:15] DEBUG loading consumer conf in dir "/home/winton/git/Lams/consumer"
+2016-03-06 11:05:10,806 ConsumerManager.py[line:18] DEBUG opening config file [/home/winton/git/Lams/conf/answer.conf]
+2016-03-06 11:05:10,806 ConsumerManager.py[line:42] DEBUG Consumer "TotalScore" loaded
+2016-03-06 11:05:10,806 lams.py[line:36] INFO 1 Consumers loaded
+2016-03-06 11:05:10,806 lams.py[line:40] INFO Lams starting...
+2016-03-06 11:05:10,806 lams.py[line:51] INFO New data found, dispatching...
+2016-03-06 11:05:10,807 ConsumerManager.py[line:55] DEBUG map consumer [event={"collector":"answer-collector","topic":"answer"}] [consumer={"collector":"answer-collector","topic":"answer"}]
+2016-03-06 11:05:10,807 lams.py[line:64] INFO event "/home/winton/git/Lams/datapool/new/201201011123374587.answer.json" is sent to consumer "{'className': 'TotalScoreConsumer', 'topic': 'answer', 'moduleName': 'TotalScoreConsumer', 'collector': 'answer-collector'}"
+2016-03-06 11:05:10,807 ConsumerManager.py[line:55] DEBUG map consumer [event={"collector":"answer-collector","topic":"answer"}] [consumer={"collector":"answer-collector","topic":"answer"}]
+2016-03-06 11:05:10,807 lams.py[line:64] INFO event "/home/winton/git/Lams/datapool/new/201201011456239876.answer.json" is sent to consumer "{'className': 'TotalScoreConsumer', 'topic': 'answer', 'moduleName': 'TotalScoreConsumer', 'collector': 'answer-collector'}"
+2016-03-06 11:05:10,807 lams.py[line:72] INFO Dispatching finish, 2 success, 0 fail

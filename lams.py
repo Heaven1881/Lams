@@ -6,6 +6,7 @@ import os
 
 from conf import Config
 from util import Util
+from ConsumerManager import ConsumerManager
 
 
 class Lams:
@@ -29,7 +30,10 @@ class Lams:
             filename=loggerConfig['filename'],
             encoding=loggerConfig['encoding']
         )
-        # 相关信息初始化
+
+        # 载入consumer
+        self.cm = ConsumerManager(Config.consumer_dir, Config.consumer_conf_dir)
+        logging.info('%d Consumers loaded' % len(self.cm.consumers))
         self.allFile = 0
         self.successFile = 0
 
@@ -56,7 +60,8 @@ class Lams:
             filePath = os.path.join(dataDir, filename)
             try:
                 event = Util.loadJsonFile(filePath)
-                logging.debug(event['event_type'])
+                for csm in self.cm.getMapConsumer(event):
+                    logging.info('event "%s" is sent to consumer "%s"' % (filePath, csm))
             except Exception as e:
                 logging.exception('Error when dispatching "%s" [%s]' % (filePath, str(e)))
             else:
