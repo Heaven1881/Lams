@@ -3,6 +3,8 @@
 
 import logging
 import os
+import datetime
+import argparse
 
 from conf import Config
 from util import Util
@@ -32,14 +34,14 @@ class Lams:
         )
 
         # 载入consumer
-        self.cm = ConsumerManager(Config.consumer_dir, Config.consumer_conf_dir)
+        self.cm = ConsumerManager(Config)
         logging.info('%d Consumers loaded' % len(self.cm.consumers))
         self.allFile = 0
         self.successFile = 0
 
         logging.info('Lams starting...')
 
-    def start(self):
+    def startForNew(self, move_after_dispatch=True):
         '''
         开始处理指定目录下的数据
         '''
@@ -49,30 +51,58 @@ class Lams:
             logging.info('New data not found, exiting...')
             os.system('exit 0')
         logging.info('New data found, dispatching...')
-        self.dispatch(dataList, dataDir)
+        for filename in dataList:
+            self.dispatch(filename, dataDir, move_after_dispatch)
+        logging.info('Dispatching finish, %d success, %d fail' % (self.successFile, self.allFile - self.successFile))
         os.system('exit 0')
 
-    def dispatch(self, dataList, dataDir):
+    def startForAll(self):
+        '''
+        重新处理所有数据
+        '''
+        logging.info('dispatch all data...')
+        for parent, dirnames, filenames in os.walk(Config.datapool):
+            for filename in filenames:
+                self.dispatch(filename, parent, False)
+        logging.info('Dispatching finish, %d success, %d fail' % (self.successFile, self.allFile - self.successFile))
+        os.system('exit 0')
+
+    def dispatch(self, filename, dataDir, move_after_dispatch=True):
         '''
         分发对应的文件列表
         '''
-        for filename in dataList:
-            filePath = os.path.join(dataDir, filename)
-            try:
-                event = Util.loadJsonFile(filePath)
-                for csm in self.cm.getMapConsumer(event):
-                    logging.info('event "%s" is sent to consumer "%s"' % (filePath, csm))
-            except Exception as e:
-                logging.exception('Error when dispatching "%s" [%s]' % (filePath, str(e)))
-            else:
-                self.successFile += 1
-            finally:
-                self.allFile += 1
-
-        logging.info('Dispatching finish, %d success, %d fail' % (self.successFile, self.allFile - self.successFile))
-
+        filePath = os.path.join(dataDir, filename)
+        try:
+            event = Util.loadJsonFile(filePath)
+            consumers = self.cm.getMapConsumer(event)
+            for csm in consumers:
+                logging.debug('event "%s" is sending to consumer "%s"' % (filePath, csm))
+            self.cm.emitEvent(event, consumers)
+        except Exception as e:
+            logging.exception('Error when dispatching "%s" [%s]' % (filePath, str(e)))
+        else:
+            self.successFile += 1
+            # 将已处理的文件移动到指定文件夹
+            if move_after_dispatch:
+                t = datetime.datetime.now()
+                today = t.strftime('%Y-%m-%d')
+                newDir = '%s/%s' % (Config.datapool, today)
+                if not os.path.exists(newDir):
+                    os.makedirs(newDir)
+                newFilePath = '%s/%s' % (newDir, filename)
+                logging.debug('moving [src=%s] [dst=%s]' % (filePath, newFilePath))
+                os.rename(filePath, newFilePath)
+        finally:
+            self.allFile += 1
 
 if __name__ == '__main__':
+    ap = argparse.ArgumentParser(description='do dispatching jobs')
+    ap.add_argument('-A', '--all', action='store_true', help='dispatch all history data and new data')
+    args = ap.parse_args()
+
     test = Lams()
     test.init()
-    test.start()
+    if args.all:
+        test.startForAll()
+    else:
+        test.startForNew()
