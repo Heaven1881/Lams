@@ -4,8 +4,10 @@
 import logging
 import os
 import base64
+import time
 import httplib
 import json
+import subprocess
 
 from collector import Colllector
 
@@ -26,7 +28,7 @@ class GitlabCollector(Colllector):
 
         self.localRepo = gitConfig['localRepo']
 
-    def readContent(self, filepath):
+    def loadJsonFromRemoteRepo(self, filepath):
         '''
         从gitlab的指定路径下读取文件，如果文件不存在，返回None
         '''
@@ -62,18 +64,32 @@ class GitlabCollector(Colllector):
         jsonData = self.loadJsonFromFile(filepath)
         return jsonData
 
+    def recodeLastCommit(self):
+        # 保存上一次的数据
+        newfile = 'last/last_commit.%d.json' % int(time.time())
+        cmd = 'mv last/last_commit.json %s' % newfile
+        ret = subprocess.call(cmd, shell=True)
+        if ret == 0:
+            logging.info('save last_commit.json to %s' % newfile)
+        # 读取新数据
+        cmd = 'git log | head -n 1| awk \'{print $2}\''
+        commitId = subprocess.check_output(cmd, shell=True, cwd=self.localRepo)
+        logging.info('init last commit [id=%s]' % commitId)
+        self.saveJsonToFile('last/last_commit.json', {'id': commitId.strip()})
+
     def getLastestConmit(self, perPage=100, page=0):
         '''
         获取最近的记录
         '''
-        url = '/api/v3/projects/%(repo_id)d/repository/commits?private_token=%(root_token)s&ref_name=%(ref)s&page=%(page)d&%per_page=(perPage)d' % {
+        url = '/api/v3/projects/%(repo_id)d/repository/commits?private_token=%(root_token)s&&ref_name=%(ref)s&&page=%(page)d&&per_page=%(per_page)d' % {
             'repo_id': self.repoId,
             'root_token': self.rootToken,
             'ref': self.ref,
-            'page': page,
             'per_page': perPage,
+            'page': page,
         }
-        conn = httplib.HTTPConnection(self.hostname, self.port, timout=30)
+        logging.debug(url)
+        conn = httplib.HTTPConnection(self.hostname, self.port, timeout=30)
         commitsInfo = None
         try:
             conn.request('GET', url, None, self.headers)
@@ -90,11 +106,20 @@ class GitlabCollector(Colllector):
             conn.close()
         return commitsInfo
 
+    def updateLoaclRepo(self):
+        cmd = 'git pull'
+        # TODO git pull 需要密码来工作
+        output = subprocess.check_output(cmd, shell=True, cwd=self.localRepo)
+        return output
+
     def getCommitsAfterLastCommit(self, perPage=100, page=0):
         '''
         递归查询,获取上次commit以后的所有记录
         '''
         lastCommit = self.loadLastCommit()
+        if not lastCommit:
+            self.recodeLastCommit()
+            lastCommit = self.loadLastCommit()
         if not lastCommit:
             logging.warning('lastCommit not found, function returning...')
             raise Exception('lastCommit not found!')
@@ -105,16 +130,16 @@ class GitlabCollector(Colllector):
             index += 1
             if lastCommitId == commit['id']:
                 logging.info('find last commit at index(%d), returning...' % index)
-                return commitsInfo[:index]
+                return commitsInfo[:index-1]
         # 如果没有找到，就读取下一页继续找
         logging.info('didnt found, load next %d commits...' % perPage)
         return commitsInfo + self.getCommitsAfterLastCommit(perPage, page + 1)
 
     def saveLastCommit(self, commit):
-        self.saveJsonToFile('last_commit.json', commit)
+        self.saveJsonToFile('last/last_commit.json', commit)
 
     def loadLastCommit(self):
-        return self.loadJsonFromFile('last_commit.json')
+        return self.loadJsonFromFile('last/last_commit.json')
 
     # TODO 处于对这个类的完整性考虑，需要实现一个读取每一条commit记录对应的文件的方法
     # 但是由于目前暂时不需要，所以暂不实现

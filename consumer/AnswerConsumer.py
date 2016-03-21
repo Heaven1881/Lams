@@ -3,6 +3,7 @@
 
 import logging
 import json
+import time
 from Consumer import Consumer
 
 
@@ -14,13 +15,51 @@ class StudentAnswerConsumer(Consumer):
         pass
 
 
+class StudentAnswerHeatmapConsumer(Consumer):
+    '''
+    统计学生整体在不同时候的回答练习情况
+    '''
+    typeStr = 'HeatmapStat'
+    visualization = 'heatmap'
+
+    def run(self, event, dataDir):
+        timeStr = event['time']
+        statpath = 'answerheatmap.stat.json'
+
+        tm = time.strptime(timeStr, '%Y-%m-%d:%H:%M:%S')
+        tm_date = '%d-%d-%d' % (tm.tm_year, tm.tm_mon, tm.tm_mday)
+        tm_hour = tm.tm_hour
+
+        # 读取并更新stat
+        stat = self.loadStat(statpath)
+        if stat is None:
+            logging.info('create new stat')
+            stat = {
+                'title': u'回答情况时间热力分布图',
+                'stat': [
+                    [tm_date, tm_hour, 1],
+                ],
+            }
+        else:
+            # 更新stat
+            new = True
+            for statItem in stat['stat']:
+                if tm_date == statItem[0] and tm_hour == statItem[1]:
+                    statItem[2] += 1
+                    new = False
+                    break
+            if new:
+                stat['stat'].append([tm_date, tm_hour, 1])
+        self.saveStat(statpath, stat)
+
+
 class QuestionAnswerConsumer(Consumer):
     '''
     统计每个题目的回答状态
     '''
     recodingType = ['single_answer', 'multi_answer', 'true_false']
     typeStr = 'CountStat'
-    visualization = 'pie-chart'
+    visualization = 'pie'
 
     def run(self, event, dataDir):
         question = event['related']['question']
@@ -35,17 +74,20 @@ class QuestionAnswerConsumer(Consumer):
             logging.info('create new qStat')
             qStat = {
                 'question': question,
-                'count': 1,
-                'stat': {
-                    studentAnswer: 1,
-                }
+                'title': u'第%d题答案分布图' % question['q_number'],
+                'stat': [
+                    {'name': studentAnswer, 'y': 1},
+                ]
             }
         else:
             # 更新qStat
-            if studentAnswer in qStat['stat']:
-                qStat['stat'][studentAnswer] += 1
-            else:
-                qStat['stat'][studentAnswer] = 1
-            qStat['count'] += 1
+            new = True
+            for statItem in qStat['stat']:
+                if studentAnswer == statItem['name']:
+                    statItem['y'] += 1
+                    new = False
+                    break
+            if new:
+                qStat['stat'].append({'name': studentAnswer, 'y': 1})
         # 保存qStat
         self.saveStat(qStatPath, qStat)

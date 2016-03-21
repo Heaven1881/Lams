@@ -49,19 +49,16 @@ class ConsumerManager:
             else:
                 logging.debug('Consumer "%s" loaded' % consumer)
 
-    def getMapConsumer(self, event):
+    def getMapConsumer(self, event, fillterClass=None):
         '''
         获取订阅事件的consumer
         '''
         retList = []
         for consumerName in self.consumers:
             consumer = self.consumers[consumerName]
-            logging.debug('map consumer [event={"collector":"%s","topic":"%s"}] [consumer={"collector":"%s","topic":"%s"}]' % (
-                event['collector'],
-                event['topic'],
-                consumer['collector'],
-                consumer['topic'],
-            ))
+            if fillterClass is not None:
+                if consumer['className'] != fillterClass[1] or consumer['moduleName'] != fillterClass[0]:
+                    continue
             if not event['collector'] in consumer['collector']:
                 continue
             if not event['topic'] in consumer['topic']:
@@ -83,7 +80,7 @@ class ConsumerManager:
                     'dataDir': dataDir
                 }
                 cmd = self.csmRunnerCmd % cmdData
-                logging.info('run cmd [cmd=%s]' % cmd)
+                logging.debug('run cmd [cmd=%s]' % cmd)
                 ret = subprocess.call(cmd.split(' '))
                 if ret == 0:
                     logging.debug('event is consumed successfully! [consumer=%s] [event=%s]' % (csm, event))

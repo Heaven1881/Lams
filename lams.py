@@ -56,25 +56,25 @@ class Lams:
         logging.info('Dispatching finish, %d success, %d fail' % (self.successFile, self.allFile - self.successFile))
         os.system('exit 0')
 
-    def startForAll(self):
+    def startForAll(self, classInfo=None):
         '''
         重新处理所有数据
         '''
         logging.info('dispatch all data...')
         for parent, dirnames, filenames in os.walk(Config.datapool):
             for filename in filenames:
-                self.dispatch(filename, parent, False)
+                self.dispatch(filename, parent, False, classInfo=classInfo)
         logging.info('Dispatching finish, %d success, %d fail' % (self.successFile, self.allFile - self.successFile))
         os.system('exit 0')
 
-    def dispatch(self, filename, dataDir, move_after_dispatch=True):
+    def dispatch(self, filename, dataDir, move_after_dispatch=True, classInfo=None):
         '''
         分发对应的文件列表
         '''
         filePath = os.path.join(dataDir, filename)
         try:
             event = Util.loadJsonFile(filePath)
-            consumers = self.cm.getMapConsumer(event)
+            consumers = self.cm.getMapConsumer(event, classInfo)
             for csm in consumers:
                 logging.debug('event "%s" is sending to consumer "%s"' % (filePath, csm))
             self.cm.emitEvent(event, consumers)
@@ -98,11 +98,14 @@ class Lams:
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(description='do dispatching jobs')
     ap.add_argument('-A', '--all', action='store_true', help='dispatch all history data and new data')
+    ap.add_argument('-c', help='just dispatch to one class, use it in this form [moduleName:className]')
     args = ap.parse_args()
 
     test = Lams()
     test.init()
     if args.all:
         test.startForAll()
+    elif args.c is not None:
+        test.startForAll(args.c.split(':'))
     else:
         test.startForNew()

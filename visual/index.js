@@ -12,7 +12,7 @@
 
 function renderData(stat) {
     console.info(stat);
-    Visual.createChart(stat, $('body'));
+    Visual.createChart(stat, $('.charts-view'));
 }
 
 $(document).ready(function() {

@@ -68,20 +68,23 @@ class AnswerGitCollector(GitlabCollector):
     def collectLatest(self):
         lastestList = self.getLastestMdfInfo()
         logging.info('find %d lastest modify' % len(lastestList))
+        if len(lastestList) != 0:
+            self.updateLoaclRepo()
         for op, emailHash, username, qNo in lastestList:
             if op in ['create', 'update']:
                 answerInfo = self.loadJsonFromLocalRepo('%(emailHash)s/%(username)s/%(qNo)d/%(qNo)d.json' % {
                     'emailHash': emailHash,
                     'username': username,
-                    'qNo': qNo
+                    'qNo': int(qNo)
                 })
                 event = self.genEventFromAnswerInfo(answerInfo)
                 self.collected += 1
                 logging.debug('sending event [event=%s]' % str(event))
-                # self.sendEvent(event)
+                self.sendEvent(event)
             else:
                 logging.warning('unknown operation [%s]' % op)
         logging.info('collect %d data' % self.collected)
+        self.recodeLastCommit()
 
     def collectAll(self):
         '''
