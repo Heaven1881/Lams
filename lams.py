@@ -60,6 +60,8 @@ class Lams:
         '''
         重新处理所有数据
         '''
+        if classInfo is not None:
+            logging.info('dispatch for class [%s]' % classInfo)
         logging.info('dispatch all data...')
         for parent, dirnames, filenames in os.walk(Config.datapool):
             for filename in filenames:
@@ -76,7 +78,7 @@ class Lams:
             event = Util.loadJsonFile(filePath)
             consumers = self.cm.getMapConsumer(event, classInfo)
             for csm in consumers:
-                logging.debug('event "%s" is sending to consumer "%s"' % (filePath, csm))
+                logging.info('event "%s" is sending to consumer "%s"' % (filePath, csm))
             self.cm.emitEvent(event, consumers)
         except Exception as e:
             logging.exception('Error when dispatching "%s" [%s]' % (filePath, str(e)))
@@ -98,7 +100,7 @@ class Lams:
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(description='do dispatching jobs')
     ap.add_argument('-A', '--all', action='store_true', help='dispatch all history data and new data')
-    ap.add_argument('-c', help='just dispatch to one class, use it in this form [moduleName:className]')
+    ap.add_argument('-c', help='dispatch all but just dispatch to one class, use it in this form [moduleName:className]')
     args = ap.parse_args()
 
     test = Lams()
