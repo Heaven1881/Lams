@@ -34,6 +34,9 @@ class AnswerGitCollector(GitlabCollector):
         logging.info('collector "%s" starting...' % self.name)
 
     def getLastestMdfInfo(self):
+        '''
+        deprecated
+        '''
         commits = self.getCommitsAfterLastCommit(perPage=500)
         mdfJsonList = []
         for commit in commits:
@@ -66,6 +69,25 @@ class AnswerGitCollector(GitlabCollector):
         return event
 
     def collectLatest(self):
+        self.updateLoaclRepo()
+        modifiedList = self.getModifiedFilesAfterLastCommit()
+        logging.info('find %d lastest modify' % len(modifiedList))
+        if len(modifiedList) == 0:
+            return
+        for filename in modifiedList:
+            match = re.match('[0-9a-z]{2}/[^/]+/[0-9]{1,4}/[0-9]{1,4}\.json', filename)
+            if match:
+                logging.debug('modified file [path=%s]' % filename)
+                answerInfo = self.loadJsonFromLocalRepo(filename)
+                event = self.genEventFromAnswerInfo(answerInfo)
+                self.sendEvent(event)
+                self.collected += 1
+            else:
+                logging.debug('skip file [path=%s]' % filename)
+        logging.info('collect %d data' % self.collected)
+        self.recodeLastCommit()
+
+    def _collectLatest(self):
         lastestList = self.getLastestMdfInfo()
         logging.info('find %d lastest modify' % len(lastestList))
         if len(lastestList) != 0:
@@ -102,6 +124,7 @@ class AnswerGitCollector(GitlabCollector):
                 else:
                     logging.debug('ignore file [%s]' % filepath)
         logging.info('collect %d data' % self.collected)
+        self.recodeLastCommit()
 
 
 if __name__ == '__main__':

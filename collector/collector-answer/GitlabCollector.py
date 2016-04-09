@@ -74,12 +74,21 @@ class GitlabCollector(Colllector):
         # 读取新数据
         cmd = 'git log | head -n 1| awk \'{print $2}\''
         commitId = subprocess.check_output(cmd, shell=True, cwd=self.localRepo)
-        logging.info('init last commit [id=%s]' % commitId)
+        logging.info('init last commit [id=%s]' % commitId.strip())
         self.saveJsonToFile('last/last_commit.json', {'id': commitId.strip()})
+
+    def readLastCommit(self):
+        '''
+        读取新的commit id
+        '''
+        cmd = 'git log | head -n 1| awk \'{print $2}\''
+        commitId = subprocess.check_output(cmd, shell=True, cwd=self.localRepo)
+        return commitId.strip()
 
     def getLastestConmit(self, perPage=100, page=0):
         '''
-        获取最近的记录
+        调用api获取最近的记录
+        注意，这个方式需要网络访问
         '''
         url = '/api/v3/projects/%(repo_id)d/repository/commits?private_token=%(root_token)s&&ref_name=%(ref)s&&page=%(page)d&&per_page=%(per_page)d' % {
             'repo_id': self.repoId,
@@ -110,11 +119,38 @@ class GitlabCollector(Colllector):
         cmd = 'git pull'
         # TODO git pull 需要密码来工作
         output = subprocess.check_output(cmd, shell=True, cwd=self.localRepo)
+        logging.debug(output)
         return output
+
+    def getModifiedFilesAfterLastCommit(self):
+        '''
+        从本地库获取上次commit以后更改的所有文件列表
+        '''
+        # 获取上次收集记录的last_commit,如果last_commit不存在,则返回使用库中的最新commit作为last_commit
+        lastCommitInfo = self.loadLastCommit()
+        if not lastCommitInfo:
+            self.recodeLastCommit()
+            lastCommitInfo = self.loadLastCommit()
+        if not lastCommitInfo:
+            logging.warning('lastCommit not found, function returning...')
+            raise Exception('lastCommit not found!')
+        lastCommit = lastCommitInfo['id']
+        logging.info('lastCommit [%s]' % lastCommit)
+
+        # 获取库中最新的commit并保存
+        headCommit = self.readLastCommit()
+        logging.info('headCommit [%s]' % headCommit)
+
+        cmd = 'git diff %s %s --name-only' % (lastCommit, headCommit)
+        logging.debug('cmd [%s]' % cmd)
+        modfiedListStr = subprocess.check_output(cmd, shell=True, cwd=self.localRepo)
+        logging.debug(modfiedListStr.strip().split('\n'))
+        return modfiedListStr.split('\n') if modfiedListStr.strip() else []
 
     def getCommitsAfterLastCommit(self, perPage=100, page=0):
         '''
         递归查询,获取上次commit以后的所有记录
+        注意：这个函数需要访问网络，同时实现方式并不优雅，建议使用函数getModifiedFilesAfterLastCommit
         '''
         lastCommit = self.loadLastCommit()
         if not lastCommit:
