@@ -151,7 +151,6 @@ Visual.visualMethodDef['polar'] = function(stat, $view) {
             data: [],
             pointPlacement: 'on',
         });
-        stat.statgroup[i]
         var statdata = stat.statgroup[i].stat;
         for (var j in statdata) {
             if(categories.indexOf(statdata[j].name) == -1) {
@@ -160,13 +159,12 @@ Visual.visualMethodDef['polar'] = function(stat, $view) {
         }
     }
     for (var i in categories) {
-        cate = categories[i];
+        var cate = categories[i];
         for (var j in series) {
             var count = Visual._getCountStatValue(cate, stat.statgroup[j].stat, 0);
             series[j].data.push(count);
         }
     }
-    console.info(series)
 
     // 绘图
     $view.highcharts({
@@ -184,6 +182,70 @@ Visual.visualMethodDef['polar'] = function(stat, $view) {
             pointFormat: '<span style="color:{series.color}">{series.name}: <b>{point.y}</b><br/>'
         },
         legend: {align: 'right', verticalAlign: 'top', y: 70, layout: 'vertical'},
+        series: series,
+    });
+};
+
+Visual.visualMethodDef['area'] = function(stat, $view) {
+    console.info(stat);
+    if (stat.type != 'CountStat') {
+        console.warn('"', stat.type, '"', 'cannot be visualiazed by "', 'area', '"');
+        return;
+    }
+    // 将数据转为规定格式
+    var xName = [];
+    var series = [];
+    var title = '';
+    for (var i in stat.statgroup) {
+        title += stat.statgroup[i].title + ' ';
+        series.push({
+            name: stat.statgroup[i].title,
+            data: [],
+        });
+        var statdata = stat.statgroup[i].stat;
+        for (var j in statdata) {
+            if (xName.indexOf(statdata[j].name) == -1) {
+                xName.push(statdata[j].name);
+            }
+        }
+    }
+    for (var i in xName) {
+        var name = xName[i];
+        for (var j in series) {
+            var count = Visual._getCountStatValue(name, stat.statgroup[j].stat, 0);
+            series[j].data.push(count);
+        }
+    }
+
+    // 绘图
+    $view.highcharts({
+        chart: { type: 'area' },
+        title: { text: title },
+        xAxis: {
+            labels: {
+                formatter: function() {
+                    return xName[this.value];
+                }
+            }
+        },
+        tooltip: {
+            headerFormat: '',
+            pointFormat: '{point.y}',
+        },
+        plotOptions: {
+            area: {
+                marker: {
+                    enabled: false,
+                    symbol: 'circle',
+                    radius: 2,
+                    states: {
+                        hover: {
+                            enabled: true
+                        }
+                    }
+                }
+            }
+        },
         series: series,
     });
 };
