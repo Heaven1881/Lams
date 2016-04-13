@@ -186,7 +186,7 @@ Visual.visualMethodDef['polar'] = function(stat, $view) {
     });
 };
 
-Visual.visualMethodDef['area'] = function(stat, $view) {
+Visual.visualMethodDef['areaspline'] = function(stat, $view) {
     console.info(stat);
     if (stat.type != 'CountStat') {
         console.warn('"', stat.type, '"', 'cannot be visualiazed by "', 'area', '"');
@@ -219,7 +219,7 @@ Visual.visualMethodDef['area'] = function(stat, $view) {
 
     // 绘图
     $view.highcharts({
-        chart: { type: 'area' },
+        chart: { type: 'areaspline' },
         title: { text: title },
         xAxis: {
             labels: {
