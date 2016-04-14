@@ -61,11 +61,14 @@ class GradeProducer:
                     'visualization': 'areaspline',
                     'type': 'CountStat',
                     'title': u'%s 成绩分布' % cInfo['cName'],
+                    'xTitle': u'分数',
+                    'yTitle': u'人数比例',
                     'enrolled': 0,
                     'cName': cInfo['cName'],
                     'detail': [
                         {
-                            'name': '%d<=x<%d' % (t, t + 10),
+                            # 'name': '%d<=x<%d' % (t, t + 10),
+                            'name': '%d' % t,
                             'low': t,
                             'count': 0,
                         } for t in range(0, 101, 10)
@@ -80,11 +83,12 @@ class GradeProducer:
                         if grade >= low and grade < high:
                             detailItem['count'] += 1
                     statData['enrolled'] += 1
-                # TODO 处理stat
+                # 处理stat
                 for detailItem in statData['detail']:
                     statData['stat'].append({
                         'name': detailItem['name'],
                         'y': 1.0 * detailItem['count'] / statData['enrolled'],
+                        # 'y': detailItem['count'],
                     })
                 self.saveJsonToFile(os.path.join(self.outputDir, '%d.json' % cInfo['cNo']), statData)
 
