@@ -3,3 +3,4 @@
 *.log
 var/*
 datapool/*
+*.p.json

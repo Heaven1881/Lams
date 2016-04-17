@@ -55,6 +55,40 @@ class Consumer:
             os.makedirs(fileDir)
         f = codecs.open(filepath, 'w', 'utf8')
         try:
-            f.write(json.dumps(jsonData, ensure_ascii=False, indent=4, separators=(',', ':')))
+            f.write(json.dumps(jsonData, ensure_ascii=False, separators=(',', ':')))
         finally:
             f.close()
+
+    def updateJsonInList(self, listObj, jsonObj, primaryKey='name'):
+        '''
+        在listObj中插入jsonObj，如果不存在则新建，如果已经存在则覆盖，根据primaryKey判断是否存在
+        '''
+        found = False
+        for item in listObj:
+            if item[primaryKey] == jsonObj[primaryKey]:
+                found = True
+                item.update(jsonObj)
+                break
+        if not found:
+            listObj.append(jsonObj)
+
+    def getJsonInList(self, listObj, key, primaryKey='name'):
+        for item in listObj:
+            if item[primaryKey] == key:
+                return item
+        return None
+
+    def genStatFromDetail(self, details, genKey=['name', 'y'], keyName=['name', 'y']):
+        '''
+        根据detail生成stat
+        '''
+        if len(genKey) != len(keyName):
+            logging.error('length mismatch')
+            return
+        stat = []
+        for item in details:
+            appendItem = {}
+            for i in range(len(keyName)):
+                appendItem[keyName[i]] = item[genKey[i]]
+            stat.append(appendItem)
+        return stat

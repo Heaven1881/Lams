@@ -123,7 +123,8 @@ class SectionScoreConsumer(Consumer):
         'Section-20': [1462, 1463, 1464, 1465, 1466, 1467, 1468],
         'Section-21': [1469, 1470, 1471, 1472, 1473, 1474, 1475],
         'Section-22': [1476, 1477, 1478, 1479, 1480],
-        'Section-23': [1481, 1482, 1483, 1484, 1485, 1486, 1487]
+        'Section-23': [1481, 1482, 1483, 1484, 1485, 1486, 1487],
+        'Other': [],
     }
 
     def getScectionName(self, qno):
@@ -139,34 +140,37 @@ class SectionScoreConsumer(Consumer):
         sectionName = self.getScectionName(question['q_number'])
         score = event['content']['score']
 
-        statPath = '%s.sections.stat.json' % student['email']
-        avgStatPath = 'all.sections.stat.json'
+        statPath = '%s.json' % student['email']
+        avgStatPath = 'all.json'
 
         # 读取并更新stat
         stat = self.loadStat(statPath)
         if stat is None:
             logging.info('create new stat file [path=%s]' % statPath)
             stat = {
-                'title': u'%s每讲得分' % student['email'],
-                'stated': [question['q_number']],
-                'stat': [
-                    {'name': sectionName, 'y': score}
-                ],
+                'title': u'%s练习情况' % student['email'],
+                'yTitle': u'得分比例',
+                'stated': [],
+                'detail': [],
+                'stat': [],
             }
-        elif question['q_number'] in stat['stated']:
+        if question['q_number'] in stat['stated']:
+            # 如果这题已经统计过那么不再统计
             # 目前没有想到更好的实现方法
             logging.info('skiped event because question [%s] has been stated' % question['q_number'])
             return
-        else:
-            stat['stated'].append(int(question['q_number']))
-            createNew = True
-            for statItem in stat['stat']:
-                if statItem['name'] == sectionName:
-                    createNew = False
-                    statItem['y'] += score
-                    break
-            if createNew:
-                stat['stat'].append({'name': sectionName, 'y': score})
+
+        # 记录detail
+        stat['stated'].append(int(question['q_number']))
+        detailItem = self.getJsonInList(stat['detail'], sectionName)
+        if detailItem is None:
+            detailItem = {'name': sectionName, 'score': score, 'complete': 0}
+        detailItem['score'] += score
+        full = len(self.sectionDef[detailItem['name']])
+        detailItem['complete'] = 1 if full == 0 else detailItem['score'] * 1.0 / full
+        self.updateJsonInList(stat['detail'], detailItem)
+        # 生成stat并保存文件
+        stat['stat'] = self.genStatFromDetail(stat['detail'], ['name', 'complete'])
         self.saveStat(statPath, stat)
 
         # 读取并更新avgStat
@@ -174,31 +178,26 @@ class SectionScoreConsumer(Consumer):
         if avgStat is None:
             logging.info('create new stat file [path=%s]' % avgStatPath)
             avgStat = {
-                'title': u'课程平均每讲得分',
+                'title': u'班级练习情况',
+                'yTitle': u'得分比例',
                 'detail': [
-                    {'name': section, 'student': 0, 'totalScore': 0, 'stated': []} for section in self.sectionDef
+                    {'name': section, 'student': 0, 'totalScore': 0, 'complete': 0, 'stated': []} for section in self.sectionDef
                 ],
                 'stat': [
                     {'name': section, 'y': 0} for section in self.sectionDef
                 ],
             }
         # 更新数据信息
-        createNewDetail = True
-        for detailItem in avgStat['detail']:
-            if detailItem['name'] == sectionName:
-                if student['email'] not in detailItem['stated']:
-                    detailItem['student'] += 1
-                    detailItem['stated'].append(student['email'])
-                detailItem['totalScore'] += score
-                createNewDetail = False
-                break
-        if createNewDetail:
-            avgStat['detail'].append({'name': sectionName, 'student': 1, 'totalScore': score, 'stated': [student['email']]})
-        # 更新统计信息
-        avgStat['stat'] = []
-        for detailItem in avgStat['detail']:
-            if detailItem['student'] == 0:
-                avgStat['stat'].append({'name': detailItem['name'], 'y': 0.0})
-            else:
-                avgStat['stat'].append({'name': detailItem['name'], 'y': 1.0*detailItem['totalScore']/detailItem['student']})
+        avgItem = self.getJsonInList(avgStat['detail'], sectionName)
+        if avgItem is None:
+            avgItem = {'name': section, 'student': 0, 'totalScore': 0, 'complete': 0, 'stated': []}
+        if student['email'] not in avgItem['stated']:
+            avgItem['student'] += 1
+            avgItem['stated'].append(student['email'])
+        avgItem['totalScore'] += score
+        full = len(self.sectionDef[avgItem['name']])   # 总分
+        avgItem['complete'] = 1 if full == 0 else 1.0 * avgItem['totalScore'] / avgItem['student'] / full
+        self.updateJsonInList(avgStat['detail'], avgItem)
+        # 生成stat并保存文件
+        avgStat['stat'] = self.genStatFromDetail(avgStat['detail'], ['name', 'complete'])
         self.saveStat(avgStatPath, avgStat)

@@ -224,7 +224,7 @@ Visual.visualMethodDef['polar'] = function(stat, $view) {
             tickmarkPlacement: 'on',
             lineWidth: 0
         },
-        yAxis: {gridLineInterpolation: 'polygon', lineWidth: 0, min: 0},
+        yAxis: {gridLineInterpolation: 'polygon', lineWidth: 0, min: 0, max: 1},
         tooltip: {
             shared: true,
             headerFormat: '',
