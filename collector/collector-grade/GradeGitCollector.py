@@ -64,13 +64,14 @@ class GradeGitCollector(GitlabCollector):
         if len(modifiedList) == 0:
             return
         for filename in modifiedList:
-            match = re.match('[0-9a-z]{2}/[^/]+/[0-9]{1,4}/[0-9]{1,4}\.json', filename)
+            match = re.match('[0-9a-z]{2}/[^/]+/[0-9]{1,4}/[0-9]{1,4}\.graded\.json', filename)
             if match:
                 logging.debug('modified file [path=%s]' % filename)
                 gradeInfo = self.loadJsonFromLocalRepo(filename)
                 event = self.genEventFromGradeInfo(gradeInfo)
                 self.sendEvent(event)
                 self.collected += 1
+                logging.info('collect file [path=%s]' % filename)
             else:
                 logging.debug('skip file [path=%s]' % filename)
         logging.info('collect %d data' % self.collected)
@@ -84,7 +85,7 @@ class GradeGitCollector(GitlabCollector):
         for parent, dirnames, filenames in os.walk(self.config.gitConfig['localRepo']):
             for filename in filenames:
                 filepath = os.path.join(parent, filename)
-                if re.search('[0-9a-z]{2}/[^/]+/[0-9]{1,4}/[0-9]{1,4}.graded.json$', filepath):
+                if re.search('[0-9a-z]{2}/[^/]+/[0-9]{1,4}/[0-9]{1,4}\.graded\.json$', filepath):
                     gradeInfo = self.loadJsonFromLocalRepo(filepath)
                     event = self.genEventFromGradeInfo(gradeInfo)
                     self.collected += 1
