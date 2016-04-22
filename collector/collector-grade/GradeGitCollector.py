@@ -35,7 +35,7 @@ class GradeGitCollector(GitlabCollector):
         logging.info('collector "%s" starting...' % self.name)
 
     def genEventFromGradeInfo(self, gradeInfo):
-        t = datetime.datetime.now() + datetime.timedelta(hours=12)
+        t = datetime.datetime.now()
         createtime = t.strftime('%Y-%m-%d:%H:%M:%S')
         event = {
             'event_type': 'student',

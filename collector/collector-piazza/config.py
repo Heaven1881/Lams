@@ -1,0 +1,21 @@
+# coding:utf8
+# author:winton
+
+import logging
+
+
+class Config:
+    loggerInfo = {
+        'filename': '/home/winton/git/Lams/log/collector/collector-piazza.log',
+        'format': '%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+        'encoding': 'utf8',
+        'level': logging.DEBUG,
+    }
+
+    datapool = '/home/winton/git/Lams/datapool/new'
+
+    piazzaAcount = {
+        'email': 'xxxxxxxxxx',
+        'password': 'xxxxx',
+        'nid': 'xxxxx'
+    }
