@@ -17,4 +17,4 @@ class Config:
     consumer_dir = '/home/winton/git/Lams/consumer'
     consumer_conf_dir = '/home/winton/git/Lams/conf'
     consumer_runtime_dir = '/home/winton/git/Lams/var'
-    consumer_runner_cmd = 'python /home/winton/git/Lams/consumer/ConsumerRunner.py -m %(modelName)s -c %(className)s -e \'%(event)s\' -d %(dataDir)s'
+    consumer_runner_cmd = 'python /home/winton/git/Lams/consumer/ConsumerRunner.py -m %(moduleName)s -c %(className)s -e \'%(event)s\' -d %(dataDir)s'

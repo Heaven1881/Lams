@@ -7,6 +7,7 @@ import json
 import base64
 import ConfigParser
 import subprocess
+from consumer.ConsumerRunner import ConsumerRunner
 
 
 class ConsumerManager:
@@ -66,23 +67,30 @@ class ConsumerManager:
             retList.append(consumer)
         return retList
 
+    def _sendFromCmd(self, cmdData):
+        cmdData['event'] = base64.b64encode(json.dumps(cmdData['event']))
+        cmd = self.csmRunnerCmd % cmdData
+        logging.debug('run cmd [cmd=%s]' % cmd)
+        ret = subprocess.call(cmd.split(' '))
+        if ret == 0:
+            logging.debug('event is consumed successfully! [consumer=%s]' % (cmdData['className']))
+
+    def _send(self, cmdData):
+        cmdData['moduleName'] = 'consumer.' + cmdData['moduleName']
+        cr = ConsumerRunner(cmdData)
+        cr.do(cmdData['event'])
+
     def emitEvent(self, event, consumerList):
         '''
         向列表中的consumer发送事件
         '''
         for csm in consumerList:
-            try:
-                dataDir = os.path.join(self.consumerRuntimeDir, 'data.%s' % (csm['className']))
-                cmdData = {
-                    'modelName': csm['moduleName'],
-                    'className': csm['className'],
-                    'event': base64.b64encode(json.dumps(event)),
-                    'dataDir': dataDir
-                }
-                cmd = self.csmRunnerCmd % cmdData
-                logging.debug('run cmd [cmd=%s]' % cmd)
-                ret = subprocess.call(cmd.split(' '))
-                if ret == 0:
-                    logging.debug('event is consumed successfully! [consumer=%s] [event=%s]' % (csm, event))
-            except Exception as e:
-                logging.exception('error when running consumer "%s": %s' % (csm, str(e)))
+            dataDir = os.path.join(self.consumerRuntimeDir, 'data.%s' % (csm['className']))
+            cmdData = {
+                'moduleName': csm['moduleName'],
+                'className': csm['className'],
+                'event': event,
+                'dataDir': dataDir
+            }
+            # self._sendFromCmd(cmdData)
+            self._send(cmdData)

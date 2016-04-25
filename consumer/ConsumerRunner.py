@@ -24,7 +24,7 @@ class ConsumerRunner:
 
         if not os.path.exists(self.dataDir):
             os.makedirs(self.dataDir)
-        module = __import__(self.moduleName)
+        module = __import__(self.moduleName, fromlist=[self.className])
         Csm = getattr(module, self.className)
         self.csm = Csm(self.dataDir)
 
@@ -32,7 +32,7 @@ class ConsumerRunner:
         try:
             self.csm.doEvent(event)
         except Exception as e:
-            logging.warning('%s - %s' % (str(e), self.className))
+            logging.exception('%s - %s' % (str(e), self.className))
 
 
 if __name__ == '__main__':

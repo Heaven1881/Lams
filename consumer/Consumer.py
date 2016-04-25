@@ -14,10 +14,7 @@ class Consumer:
 
     def doEvent(self, event):
         if event is not None:
-            try:
-                self.run(event, self.dataDir)
-            except Exception as e:
-                logging.exception(str(e))
+            self.run(event, self.dataDir)
         else:
             logging.warning('NoneObject event')
 
