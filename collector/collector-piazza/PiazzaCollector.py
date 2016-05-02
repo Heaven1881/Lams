@@ -83,10 +83,10 @@ class PiazzaCollector(APICollector):
 
     def collectLatest(self):
         logging.info('collect last not suported')
-        logging.info('collect %d data' % self.collected)
+        self.collectAll()
 
     def collectAll(self):
-        logging.info('collecting statistics data from piazza...')
+        logging.info('collecting all statistics data from piazza...')
         self.piazzaSignUp()
         result = self.piazzaGetStatistics()
         if result:

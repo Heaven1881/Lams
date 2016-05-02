@@ -79,6 +79,8 @@ class AnswerGitCollector(GitlabCollector):
             if match:
                 logging.debug('modified file [path=%s]' % filename)
                 answerInfo = self.loadJsonFromLocalRepo(filename)
+                if answerInfo is None:
+                    continue
                 event = self.genEventFromAnswerInfo(answerInfo)
                 self.sendEvent(event)
                 self.collected += 1

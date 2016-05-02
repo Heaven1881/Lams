@@ -57,12 +57,13 @@ class ConsumerManager:
         retList = []
         for consumerName in self.consumers:
             consumer = self.consumers[consumerName]
+            # 如果用户指定了具体的consumer，则只处理发送给这个consumer的事件信息
             if fillterClass is not None:
                 if consumer['className'] != fillterClass[1] or consumer['moduleName'] != fillterClass[0]:
                     continue
-            if not event['collector'] in consumer['collector']:
+            if consumer['collector'] != 'all' and event['collector'] not in consumer['collector']:
                 continue
-            if not event['topic'] in consumer['topic']:
+            if consumer['topic'] != 'all' and event['topic'] not in consumer['topic']:
                 continue
             retList.append(consumer)
         return retList
