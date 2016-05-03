@@ -35,23 +35,29 @@ class GitlabCollector(APICollector):
         self.collected = 0
         logging.info('collector "%s" starting...' % self.name)
 
-    def initProjectList(self, jsonFilename='projects.json'):
+    def initProjectList(self, jsonFilename='projects.json', maxPage=5, perPage=100):
         '''
         获取teacher下的所有库，这些库都是学生的实验代码库
         检查文件jsonFilename是否存在，如果存在则直接读取本地，否则读取网络
         '''
         projects = self.loadJsonFromFile(jsonFilename)
         if projects is None:
-            url = 'http://172.16.13.236/api/v3/projects?private_token=%(root_token)s&per_page=%(per_page)d' % {
-                'root_token': self.config.rootToken,
-                'per_page': 300,
-            }
-            projects = self.doGet(url, datatype='json')
-            # 检查获取的project list是否合理
-            result = 'success' if type(projects) is list else projects['message']
-            logging.info('getting project list from gitlab... %s' % result)
-            if result is 'success':
-                self.saveJsonToFile(jsonFilename, projects)
+            projects = []
+            # 一页一页地读取project
+            for page in range(1, maxPage + 1):
+                url = 'http://172.16.13.236/api/v3/projects?private_token=%(root_token)s&per_page=%(per_page)d&page=%(page)d' % {
+                    'root_token': self.config.rootToken,
+                    'page': page,
+                    'per_page': perPage,
+                }
+                projectGroup = self.doGet(url, datatype='json')
+                # 检查获取的project list是否合理
+                result = 'success' if type(projects) is list else projects['message']
+                logging.info('getting project list from gitlab... %s' % result)
+                if result is 'success':
+                    projects += projectGroup
+            # 保存project到文件
+            self.saveJsonToFile(jsonFilename, projects)
         return projects
 
     def getCommitList(self, projectId, user):
