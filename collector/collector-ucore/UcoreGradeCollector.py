@@ -59,12 +59,14 @@ class UcoreGradeCollector(Collector):
                     'lab': lab,
                     'student': {
                         'id': id,
-                        'labScore': score,
                         'realName': realName,
                         'gitUsername': gitUsername,
-                        'reportScore': reportScore,
 
                     }
+                },
+                'content': {
+                    'labScore': score,
+                    'reportScore': reportScore,
                 }
             }
             self.sendEvent(event)
