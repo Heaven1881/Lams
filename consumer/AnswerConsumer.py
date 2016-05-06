@@ -164,7 +164,7 @@ class SectionScoreConsumer(Consumer):
         stat['stated'].append(int(question['q_number']))
         detailItem = self.getJsonInList(stat['detail'], sectionName)
         if detailItem is None:
-            detailItem = {'name': sectionName, 'score': score, 'complete': 0}
+            detailItem = {'name': sectionName, 'score': 0, 'complete': 0}
         detailItem['score'] += score
         full = len(self.sectionDef[detailItem['name']])
         detailItem['complete'] = 1 if full == 0 else detailItem['score'] * 1.0 / full

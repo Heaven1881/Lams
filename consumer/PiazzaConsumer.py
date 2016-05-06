@@ -51,7 +51,6 @@ class PiazzaActionCsm(Consumer):
                 return
         else:
             logging.info('no past data, consumer will handle current data')
-        # TODO 调用statKey解析数据并分别储存
         # 重写所有信息
         eventTime = datetime.datetime.now()
         eventTime = eventTime.strftime('%Y-%m-%d:%H:%M:%S')
@@ -105,3 +104,38 @@ class PiazzaActionCsm(Consumer):
             'eventTime': eventTime,
         }
         self.saveStat('answers.json', answersStat)
+
+
+class PiazzaPersonalCsm(Consumer):
+    '''
+    收集每个学生在piazza上的行为统计
+    '''
+    typeStr = 'Data'
+    visualization = 'none'
+
+    def statPersonalInfo(self, data):
+        users = data['users']
+        for user in users:
+            stat = {
+                'title': u'piaaza 个人情况',
+                'data': user
+            }
+            self.saveStat('%s.json' % user['email'].split(',')[0], stat)
+
+    def run(self, event, dataDir):
+        lastUpdate = self.loadStat('last_update.json')
+        if lastUpdate is not None:
+            eventTime = datetime.datetime.strptime(event['time'], '%Y-%m-%d:%H:%M:%S')
+            lastTime = datetime.datetime.strptime(lastUpdate['eventTime'], '%Y-%m-%d:%H:%M:%S')
+            if lastTime > eventTime:
+                logging.info('skip past event [eventTime=%s] [lastTime=%s]' % (event['time'], asksStat['eventTime']))
+                return
+        else:
+            logging.info('no past data, consumer will handle current data')
+
+        self.statPersonalInfo(event['content'])
+
+        # 记录处理时间
+        eventTime = datetime.datetime.now()
+        eventTime = eventTime.strftime('%Y-%m-%d:%H:%M:%S')
+        self.saveStat('last_update.json', {'eventTime': eventTime})

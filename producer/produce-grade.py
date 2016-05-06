@@ -55,6 +55,22 @@ class GradeProducer:
 
     def run(self):
         data = self.loadJsonFromFile(self.inputFilename)
+        statAllData = {
+            'visualization': 'areaspline',
+            'type': 'CountStat',
+            'title': u'整体成绩分布',
+            'xTitle': u'分数',
+            'yTitle': u'人数比例',
+            'enrolled': 0,
+            'detail': [
+                {
+                    'name': '%d' % t,
+                    'low': t,
+                    'count': 0,
+                } for t in range(0, 101, 10)
+            ],
+            'stat': [],
+        }
         for cInfo in data['result']:
             if cInfo['cNo'] in self.statedNo:
                 statData = {
@@ -75,22 +91,31 @@ class GradeProducer:
                     ],
                     'stat': [],
                 }
-                for gradeInfo in cInfo['info']:
-                    grade = gradeInfo['grade']
-                    for detailItem in statData['detail']:
-                        low = detailItem['low']
-                        high = low + 10
-                        if grade >= low and grade < high:
-                            detailItem['count'] += 1
-                    statData['enrolled'] += 1
-                # 处理stat
-                for detailItem in statData['detail']:
-                    statData['stat'].append({
-                        'name': detailItem['name'],
-                        'y': 1.0 * detailItem['count'] / statData['enrolled'],
-                        # 'y': detailItem['count'],
-                    })
+                self.statGrade(statData, cInfo['info'])
                 self.saveJsonToFile(os.path.join(self.outputDir, '%d.json' % cInfo['cNo']), statData)
+
+                # 统计整体成绩
+                self.statGrade(statAllData, cInfo['info'])
+        self.saveJsonToFile(os.path.join(self.outputDir, 'allclass.json'), statAllData)
+
+    def statGrade(self, statData, gradeInfos, normalize=True):
+        for gradeInfo in gradeInfos:
+            grade = gradeInfo['grade']
+            for detailItem in statData['detail']:
+                low = detailItem['low']
+                high = low + 10
+                if grade >= low and grade < high:
+                    detailItem['count'] += 1
+            statData['enrolled'] += 1
+        # 处理stat
+        statData['stat'] = []
+        f = statData['enrolled'] if normalize else 1
+        for detailItem in statData['detail']:
+            statData['stat'].append({
+                'name': detailItem['name'],
+                'y': 1.0 * detailItem['count'] / f,
+                # 'y': detailItem['count'],
+            })
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(description='parser json data')

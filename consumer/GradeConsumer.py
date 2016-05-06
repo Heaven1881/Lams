@@ -28,12 +28,21 @@ class ScoreCsm(Consumer):
         gradeType = 'ucore-lab' if related.get('lab') is not None else gradeType
 
         # 读取统计数据, 如果这是第一次读取，则新建统计数据文件
-        statPath = '%s.json' % student['email']
+        if gradeType is 'openedx-quiz':
+            statPath = '%s.json' % student['email']
+            name = student['email']
+        elif gradeType is 'ucore-lab':
+            statPath = 'ucore.%s.json' % student['gitUsername']
+            name = student['gitUsername']
+        else:
+            logging.warning('unkown grade type')
+            return
+
         stat = self.loadStat(statPath)
         if stat is None:
             logging.info('create new stat file [path=%s]' % statPath)
             stat = {
-                'title': u'%s 得分统计' % student['email'],
+                'title': u'%s 得分统计' % name,
                 'student': student,
                 'data': {
                     'openedx-quiz': {},
@@ -49,7 +58,7 @@ class ScoreCsm(Consumer):
             stat['data']['openedx-quiz'].update(gradeItem)
         if gradeType is 'ucore-lab':
             lab = related['lab']
-            gradeItem = {lab['lab']: content}
+            gradeItem = {lab: content}
             stat['data']['ucore-lab'].update(gradeItem)
 
         # 保存信息
