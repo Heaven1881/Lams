@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Student Status Report</title>
+<link href="/visual/report.css" rel="stylesheet">
+<script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+<script src="//cdn.hcharts.cn/highcharts/highcharts.js"></script>
+<script src="//cdn.hcharts.cn/highcharts/highcharts-more.js"></script>
+<script src="//cdn.hcharts.cn/highmaps/modules/data.js"></script>
+<script src="//cdn.hcharts.cn/highmaps/modules/map.js"></script>
+<script src="//cdn.bootcss.com/handlebars.js/4.0.5/handlebars.min.js"></script>
+<script src="/visual/visual.js"></script>
+<script src="/visual/report.js"></script>
+</head>
+<body>
+
+<h1>学生综合报告</h1>
+
+<div class="panel">
+    <h2>个人信息</h2>
+<lams-hb>
+<data>data.info/{edxEmail}.json</data>
+<script type="text/x-handlebars-template">
+    <div class="info-item">
+        <div class="info-key">姓名:</div>
+        <div class="info-value">{{realName}}</div>
+    </div>
+    <div class="info-item">
+        <div class="info-key">ID:</div>
+        <div class="info-value">{{id}}</div>
+    </div>
+    <div class="info-item">
+        <div class="info-key">注册邮箱:</div>
+        <div class="info-value">{{edxEmail}}</div>
+    </div>
+</script>
+</lams-hb>
+</div>
+
+<div class="panel">
+    <h2>Open edx 平台情况</h2>
+    <p>操作系统open edX平台在线练习情况</p>
+
+    <div style="float:left">
+        <lams-hb>
+        <data>data.SectionScoreConsumer/{edxEmail}.json</data>
+        <script type="text/x-handlebars-template">
+            <table style="width:200px">
+                <tr>
+                    <th>章节</th>
+                    <th>得分</th>
+                </tr>
+                {{#each_section detail}}
+                <tr>
+                    <td>{{name}}</td>
+                    <td>{{score}}</td>
+                </tr>
+                {{/each_section}}
+            </table>
+        </script>
+        </lams-hb>
+    </div>
+
+    <div style="float:right">
+        <lams-chart data-width="600px" data-height="400px" data-v="polar">
+            <data>data.SectionScoreConsumer/all.json</data>
+            <data>data.SectionScoreConsumer/{edxEmail}.json</data>
+        </lams-chart>
+    </div>
+    <div style="clear:both;"></div>
+</div>
+
+<div class="panel">
+    <h2>在线实验情况</h2>
+    <p>实验成绩</p>
+    <lams-hb>
+    <data>data.ScoreCsm/ucore.{gitUsername}.json</data>
+    <script type="text/x-handlebars-template">
+        {{#with data}}
+        <table style="width:100%">
+            <tr><th>实验</th><th>实验得分</th><th>实验报告分数</th></tr>
+            {{#each ucore-lab}}
+            <tr><td>{{@key}}</td><td>{{labScore}}/{{maxLabScore}}</td><td>{{reportScore}}</td></tr>
+            {{/each}}
+        {{/with}}
+    </script>
+    </lams-hb>
+    <p>lab commits情况</p>
+    <lams-hb>
+    <data>data.GitlabCommitCsm/{gitUsername}.json</data>
+    <script type="text/x-handlebars-template">
+        <table style="width:100%">
+            <tr><th>时间</th><th>commit信息</th></tr>
+        {{#each data}}
+            <tr><td>{{created_at}}</td><td>{{message}}</td></tr>
+        {{/each}}
+        </table>
+    </script>
+    </lams-hb>
+</div>
+
+<div class="panel">
+    <h2>Piazza平台活动情况</h2>
+    <lams-hb>
+    <data>data.PiazzaPersonalCsm/{piazzaEmail}.json</data>
+    <script type="text/x-handlebars-template">
+    {{#with data}}
+    <table style="width:100%">
+      <tr>
+        <th>用户名</th>
+        <th>注册邮箱</th>
+        <th>提问数</th>
+        <th>回答数</th>
+        <th>发帖数</th>
+        <th>浏览数</th>
+        <th>在线天数</th>
+      </tr>
+      <tr>
+        <td>{{name}}</td>
+        <td>{{email}}</td>
+        <td>{{answers}}</td>
+        <td>{{asks}}</td>
+        <td>{{posts}}</td>
+        <td>{{views}}</td>
+        <td>{{days}}</td>
+      </tr>
+    </table>
+    {{/with}}
+    </script>
+    </lams-hb>
+</div>
+
+
+<div class="panel">
+    <h2>其他</h2>
+    <lams-hb>
+    <data>data.ScoreCsm/{edxEmail}.json</data>
+    <script type="text/x-handlebars-template">
+    {{#with data}}
+        <p>每小题得分</p>
+        <table border="1">
+            <tr>
+                <th>题号</th>
+                <th>得分</th>
+            </tr>
+            {{#each openedx-quiz}}
+            <tr>
+                <td>{{@key}}</td>
+                <td>{{score}}</td>
+            </tr>
+            {{/each}}
+        </table>
+        {{/with}}
+    </script>
+    </lams-hb>
+</div>
+
+</body>
+</html>

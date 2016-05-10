@@ -103,7 +103,7 @@ Visual.parseCountStat = function(stat) {
     return {
         name: xName,
         series: series,
-        title: title,
+        title: null,
         xTitle: xTitle,
         yTitle: yTitle,
         legendenabled: legendenabled,
@@ -161,8 +161,7 @@ Visual.visualMethodDef['heatmap'] = function(stat, $view) {
             type: 'heatmap',
         },
         title: {
-            text: stat.title,
-            align: 'left'
+            text: null, //TODO 处理title
         },
         xAxis: {
             tickPixelInterval: 50,
@@ -231,7 +230,7 @@ Visual.visualMethodDef['polar'] = function(stat, $view) {
             headerFormat: '',
             pointFormat: '<span style="color:{series.color}">{series.name}: <b>{point.y}</b><br/>'
         },
-        legend: {align: 'right', verticalAlign: 'top', y: 70, layout: 'vertical'},
+        //legend: {align: 'bottom', verticalAlign: 'top', y: 70, layout: 'vertical'},
         series: series,
     });
 };

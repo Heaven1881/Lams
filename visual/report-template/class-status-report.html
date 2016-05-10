@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Class Status Report</title>
+<link href="/visual/report.css" rel="stylesheet">
+<script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+<script src="//cdn.hcharts.cn/highcharts/highcharts.js"></script>
+<script src="//cdn.hcharts.cn/highcharts/highcharts-more.js"></script>
+<script src="//cdn.hcharts.cn/highmaps/modules/data.js"></script>
+<script src="//cdn.hcharts.cn/highmaps/modules/map.js"></script>
+<script src="//cdn.bootcss.com/handlebars.js/4.0.5/handlebars.min.js"></script>
+<script src="/visual/visual.js"></script>
+<script src="/visual/report.js"></script>
+<script src="/visual/class-report.js"></script>
+</head>
+<body>
+
+<h1>操作系统课程综合报告</h1>
+
+<div class="panel">
+    <h2>课程信息</h2>
+    <p>清华大学2016春-操作系统</p>
+</div>
+
+<div class="panel">
+    <h2>在线练习情况</h2>
+    <div class="sub-panel">
+        <p>各章节得分分布（归一统计）</p>
+
+        <div style="float:right">
+            <lams-chart data-width="600px" data-height="400px" data-v='polar'>
+                <data>data.SectionScoreConsumer/all.json</data>
+            </lams-chart>
+        </div>
+
+        <div style="float:left">
+            <lams-hb>
+                <data>data.SectionScoreConsumer/all.json</data>
+                <script type="text/x-handlebars-template">
+                    <table style="width:280px">
+                        <tr>
+                            <th>章节</th>
+                            <th>答题人数</th>
+                            <th>平均得分</th>
+                        </tr>
+                        {{#each_section detail}}
+                        <tr>
+                            <td>{{name}}</td>
+                            <td>{{student}}</td>
+                            <td>{{Average totalScore student complete}}</td>
+                        </tr>
+                        {{/each_section}}
+                    </table>
+                </script>
+            </lams-hb>
+        </div>
+        <div style="clear:both;"></div>
+    </div>
+
+    <div class="sub-panel">
+        <p>在线练习答题频率分布图（100天）</p>
+
+        <lams-chart data-width="850px" data-height="400px">
+            <data>data.StudentAnswerHeatmapConsumer/answerheatmap.stat.json</data>
+        </lams-chart>
+    </div>
+</div>
+
+<div class="panel">
+    <h2>实验情况</h2>
+</div>
+
+<div class="panel">
+    <h2>Piazza平台情况</h2>
+    <div class="ssub-panel" style="float:left">
+        <p>Piazza平台提问情况</p>
+        <lams-chart data-width="400px" data-height="300px">
+            <data>data.PiazzaActionCsm/asks.json</data>
+        </lams-chart>
+    </div>
+    <div class="ssub-panel" style="float:left">
+        <p>Piazza平台浏览情况</p>
+        <lams-chart data-width="400px" data-height="300px">
+            <data>data.PiazzaActionCsm/views.json</data>
+        </lams-chart>
+    </div>
+    <div class="ssub-panel" style="float:left">
+        <p>Piazza平台在线情况</p>
+        <lams-chart data-width="400px" data-height="300px">
+            <data>data.PiazzaActionCsm/days.json</data>
+        </lams-chart>
+    </div>
+    <div class="ssub-panel" style="float:left">
+        <p>Piazza平台回答情况</p>
+        <lams-chart data-width="400px" data-height="300px">
+            <data>data.PiazzaActionCsm/answers.json</data>
+        </lams-chart>
+    </div>
+    <div style="clear:both"></div>
+</div>
+
+</body>
