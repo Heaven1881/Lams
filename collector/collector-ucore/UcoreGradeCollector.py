@@ -38,18 +38,23 @@ class UcoreGradeCollector(Collector):
         f = open(filename)
         lab = filename.split('.')[1]
         lines = f.readlines()
+        maxScore = None
         for line in lines:
             info = line.split(' ')
             uinfo = [x.decode('utf8') for x in info]
-            id = uinfo[0]
-            realName = uinfo[1]
-            gitUsername = uinfo[2]
-            score = uinfo[3].split('/')[0]
-            if score == 'no':
-                score = 'no score'
-                reportScore = 'no score'
-                continue
-            reportScore = uinfo[4]
+            try:
+                id = uinfo[0]
+                realName = uinfo[1]
+                gitUsername = uinfo[2]
+                score = uinfo[3].split('/')[0]
+                maxScore = uinfo[3].split('/')[1] if maxScore is None else maxScore
+                if score == 'no':
+                    score = 'no score'
+                    reportScore = 'no score'
+                    continue
+                reportScore = uinfo[4]
+            except Exception as e:
+                print 'error', e, line
 
             event = {
                 'event_type': 'student',
@@ -67,6 +72,8 @@ class UcoreGradeCollector(Collector):
                 'content': {
                     'labScore': score,
                     'reportScore': reportScore,
+                    'maxLabScore': maxScore,
+                    'maxReportScore': 10,
                 }
             }
             self.sendEvent(event)
