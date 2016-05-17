@@ -12,6 +12,7 @@
 <script src="//cdn.bootcss.com/handlebars.js/4.0.5/handlebars.min.js"></script>
 <script src="/visual/visual.js"></script>
 <script src="/visual/report.js"></script>
+<script src="/visual/student-report.js"></script>
 </head>
 <body>
 
@@ -45,25 +46,30 @@
     <div style="float:left">
         <lams-hb>
         <data>data.SectionScoreConsumer/{edxEmail}.json</data>
+        <data>data.SectionScoreConsumer/SectionDetatil.php</data>
         <script type="text/x-handlebars-template">
-            <table style="width:200px">
+            {{#with a}}
+            <table style="width:400px">
                 <tr>
                     <th>章节</th>
                     <th>得分</th>
+                    <th>备注</th>
                 </tr>
                 {{#each_section detail}}
                 <tr>
                     <td>{{name}}</td>
                     <td>{{score}}</td>
+                    <td>{{Compare name score ../../b}}</td>
                 </tr>
                 {{/each_section}}
             </table>
+            {{/with}}
         </script>
         </lams-hb>
     </div>
 
     <div style="float:right">
-        <lams-chart data-width="600px" data-height="400px" data-v="polar">
+        <lams-chart data-width="500px" data-height="400px" data-v="polar">
             <data>data.SectionScoreConsumer/all.json</data>
             <data>data.SectionScoreConsumer/{edxEmail}.json</data>
         </lams-chart>

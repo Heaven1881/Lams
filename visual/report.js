@@ -61,7 +61,7 @@ Report.init = function(student) {
                 var $el = $(this);
                 var urlList = [];
                 $el.find('data').each(function() {
-                    preUrl = $(this).text()
+                    preUrl = $(this).text();
                     urlList.push(preUrl.replaceInFormat(student));
                 });
                 var datalist = Report.syncLoad(urlList);
@@ -73,17 +73,6 @@ Report.init = function(student) {
     }
 };
 
-$(function() {
-    var email = 'maye9999@163.com';
-    $.ajax({
-        url: '/stat/data.info/' + email + '.json',
-        dataType: 'json',
-        success: function(res) {
-            res.piazzaEmail = res.edxEmail;
-            Report.init(res);
-        }
-    });
-});
 
 // 内置Render
 // 处理chart标签
