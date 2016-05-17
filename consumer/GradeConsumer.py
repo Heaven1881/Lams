@@ -63,3 +63,34 @@ class ScoreCsm(Consumer):
 
         # 保存信息
         self.saveStat(statPath, stat)
+
+
+class UcoreScoreCsm(Consumer):
+    '''
+    根据lab统计每个lab的实验得分分布
+    '''
+    typeStr = 'CountStat'
+    visualization = 'pie'
+
+    def run(self, event, dataDir):
+        related = event['related']
+        content = event['content']
+        lab = related['lab']
+        statPath = '%s.json' % lab
+        stat = self.loadStat(statPath)
+        if stat is None:
+            stat = {
+                'title': u'%s 实验成绩分布' % lab,
+                'xTitle': u'得分',
+                'yTitle': u'人数',
+                'stat': [],
+            }
+        labScore = content['labScore']
+        statItem = self.getJsonInList(stat['stat'], labScore)
+        if statItem is None:
+            statItem = {'name': labScore, 'y': 0}
+        statItem['y'] += 1
+        self.updateJsonInList(stat['stat'], statItem)
+        self.saveStat(statPath, stat)
+
+
