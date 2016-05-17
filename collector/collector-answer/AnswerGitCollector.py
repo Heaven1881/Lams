@@ -77,13 +77,16 @@ class AnswerGitCollector(GitlabCollector):
         for filename in modifiedList:
             match = re.match('[0-9a-z]{2}/[^/]+/[0-9]{1,4}/[0-9]{1,4}\.json', filename)
             if match:
-                logging.debug('modified file [path=%s]' % filename)
+                logging.info('modified file [path=%s]' % filename)
                 answerInfo = self.loadJsonFromLocalRepo(filename)
                 if answerInfo is None:
                     continue
-                event = self.genEventFromAnswerInfo(answerInfo)
-                self.sendEvent(event)
-                self.collected += 1
+                try:
+                    event = self.genEventFromAnswerInfo(answerInfo)
+                    self.sendEvent(event)
+                    self.collected += 1
+                except:
+                    logging.exception('exception in file [%s]' % (filename))
             else:
                 logging.debug('skip file [path=%s]' % filename)
         logging.info('collect %d data' % self.collected)

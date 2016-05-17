@@ -4,3 +4,7 @@ Handlebars.registerHelper('Average', function(totalScore, student, complete) {
     var avgMax = (totalScore / student / complete).toFixed(0);
     return avg + '/' + avgMax;
 });
+
+$(function() {
+    Report.init({});
+});
