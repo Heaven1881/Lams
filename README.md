@@ -77,3 +77,22 @@ $ sudo /edx/bin/supervisorctl -c /edx/etc/supervisord.conf restart edxapp_worker
 在完成代码的部署之后，你需要修改对应的配置文件，包括：
 - 根目录下的`conf.py`，是系统整体配置
 - collector子目录的所有`config.py`是各个Collector的配置
+
+## 使用方法
+**数据收集**
+使用如下命令触发所有收集者的工作
+
+```bash
+$ sh /Lams/collector/collect-all.sh
+```
+
+完成收集后，收集到的数据会保存到`/Lams/datapool/new`中。
+
+**数据分析**
+使用如下代码完成数据的处理工作
+
+```bash
+$ python /Lams/lams.py
+```
+完成处理后，结果保存在`/Lams/var`目录中，处理日志在`/Lams/log`目录中。
+数据的收集和分析均支持增量操作。
