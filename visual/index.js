@@ -38,7 +38,7 @@ $(document).ready(function() {
     for (var i in chart.data) {
         statpath = chart.data[i];
         $.ajax({
-            url: '/stat/' + statpath,
+            url: '/static/lams/stat/' + statpath,
             dataType: 'json',
             async: false,
             success: function(data) {

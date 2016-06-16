@@ -29,7 +29,7 @@ Report.syncLoad = function(urlList) {
             data = Report._data[url];
         } else {
             $.ajax({
-                url: '/stat/' + url,
+                url: '/static/lams/stat/' + url,
                 dataType: 'json',
                 async: false,
                 success: function(res) {

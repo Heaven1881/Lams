@@ -20,7 +20,7 @@ function getQueryString(name) {
 $(function() {
     var email = getQueryString('email');
     $.ajax({
-        url: '/stat/data.info/' + email + '.json',
+        url: '/static/lams/stat/data.info/' + email + '.json',
         dataType: 'json',
         success: function(res) {
             res.piazzaEmail = res.edxEmail;
