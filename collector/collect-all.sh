@@ -11,13 +11,8 @@ do_collect()
     )
 }
 
-# connect to vpn
-sudo vpnc supervessal
 
 do_collect answer AnswerGitCollector.py
 do_collect gitlab GitlabCollector.py
 do_collect grade GradeGitCollector.py
-
-sudo vpnc-disconnect
-
 do_collect piazza PiazzaCollector.py

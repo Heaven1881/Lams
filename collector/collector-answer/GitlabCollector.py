@@ -27,6 +27,7 @@ class GitlabCollector(Colllector):
         self.headers = {}
 
         self.localRepo = gitConfig['localRepo']
+        self.repoUser = gitConfig['user']
 
     def loadJsonFromRemoteRepo(self, filepath):
         '''
@@ -116,8 +117,8 @@ class GitlabCollector(Colllector):
         return commitsInfo
 
     def updateLoaclRepo(self):
-        cmd = 'git pull'
-        # TODO git pull 需要密码来工作
+        cmd = 'sudo -u %s git pull' % self.repoUser
+        # git pull 需要密码来工作
         output = subprocess.check_output(cmd, shell=True, cwd=self.localRepo)
         logging.debug(output)
         return output
