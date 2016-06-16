@@ -96,3 +96,12 @@ $ python /Lams/lams.py
 ```
 完成处理后，结果保存在`/Lams/var`目录中，处理日志在`/Lams/log`目录中。
 数据的收集和分析均支持增量操作。
+
+## 特殊数据源的收集方法
+实验里面`UCore`的成绩保存在文本文件中，如果需要收集学生的在线实验成绩，则使用如下命令
+```bash
+$ cd /Lams/collector/collector-ucore
+$ python UcoreGradeCollector.py -i input_file
+```
+
+`input_file`是成绩文件的数据，格式参考`/Lams/collector/collector-ucore/result`文件夹下的文件格式
