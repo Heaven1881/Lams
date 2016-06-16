@@ -18,7 +18,6 @@ function getQueryString(name) {
 }
 
 $(function() {
-    //var email = 'maye9999@163.com';
     var email = getQueryString('email');
     $.ajax({
         url: '/stat/data.info/' + email + '.json',

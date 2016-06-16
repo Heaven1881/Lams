@@ -165,7 +165,7 @@ Visual.visualMethodDef['heatmap'] = function(stat, $view) {
         },
         xAxis: {
             tickPixelInterval: 50,
-            min: Date.parse(new Date) - 3600 * 1000 * 24 * 100, // 过去100天
+            min: Date.parse(new Date) - 3600 * 1000 * 24 * 120, // 过去120天
             max: Date.parse(new Date) + 3600 * 1000 * 24, //当前日期的下一天
         },
         yAxis: {
@@ -183,6 +183,12 @@ Visual.visualMethodDef['heatmap'] = function(stat, $view) {
             tickWidth: 1,
             min: 0,
             max: 23
+        },
+
+        plotOptions: {
+            series: {
+                turboThreshold: 0,
+            }
         },
 
         colorAxis: {
